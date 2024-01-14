@@ -22,6 +22,13 @@
 # Usage example:
 # ngcr.sh -d=ngtest -a=16.2.11 -n=18.10.0
 #
+# After you download the script, you should make it executable, e.g.:
+# chmod +x ngcr.sh
+# Alternatively, you can also run it as a command:
+# - Copy the file to the system folder (which is included in your $PATH): e.g /usr/local/bin
+# - Give execution permissions: e.g chmod u+x npmts.sh
+# - Additionally, you can remove the .sh extension or use a name alias
+#
 # For related information check Authors posts at:
 # https://medium.com/@zzpzaf.se/angular-create-a-project-with-any-angular-version-you-like-c9108419835c
 # https://medium.com/@zzpzaf.se/node-js-version-adventures-using-nvm-974f81b4cc08
