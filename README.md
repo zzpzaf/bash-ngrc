@@ -1,7 +1,7 @@
 
 # ngrc
 
-Bash script filename: ngcr.sh - version 0.0.2
+Bash script filename: ngcr.sh - version 0.0.3
 ==================================================================================================
 240114-31 (c) Copyright Panos Zafiropoulos <www.devxperiences.com>
 --------------------------------------------------------------------------------------------------
@@ -17,16 +17,19 @@ Note: by default it uses the following parameters: --commit=false --style=scss -
 ## Parameters:
 
    -d | --directory	
-   The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding.
+   The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
    
    -a | --angular
-   The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version
+   The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. -a=16.2.11
    
    -n | --node
-   The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected.
+   The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
+
+   -m | --material  
+   If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
 
 ## Usage example:
-ngcr.sh -d=ngtest -a=16.2.11 -n=18.10.0
+ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=yes
 
 
 ---

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # **************************************************************************************************
-# Bash script filename: ngcr.sh - version 0.0.2
+# Bash script filename: ngcr.sh - version 0.0.3
 # ==================================================================================================
 # 240114-31 (c) Copyright Panos Zafiropoulos <www.devxperiences.com>
 # --------------------------------------------------------------------------------------------------
@@ -15,12 +15,13 @@
 # 2. At least a Node.js version should have been set via nvm and this version should be compatible with the Angular version that will be used to create the project.
 #
 # Parameters:
-#   -d | --directory	The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding.
-#   -a | --angular	  The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version
-#   -n | --node		    The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected.
+#   -d | --directory	The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
+#   -a | --angular	  The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
+#   -n | --node		    The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
+#   -m | --material   If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
 #
 # Usage example:
-# ngcr.sh -d=ngtest -a=16.2.11 -n=18.10.0
+# ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=yes
 #
 # After you download the script, you should make it executable, e.g.:
 # chmod +x ngcr.sh
@@ -36,8 +37,13 @@
 # **************************************************************************************************
 
 
-
-
+# Check if there are any arguments
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied!" 
+    echo "Exiting..."
+    exit 1
+fi
 
 # get input paramenters
 for i in "$@"; do
@@ -51,7 +57,11 @@ for i in "$@"; do
       shift # past argument=value
       ;;
     -n=*|--node=*)
-      NODE_VERSION="${i#*=}"
+      NODE_VERSION="${i#*=}"   # 
+      shift # past argument=value
+      ;;
+    -m=*|--material=*)
+      MATERIAL="${i#*=}"             #  <-------------
       shift # past argument=value
       ;;
     -*|--*)
@@ -62,6 +72,9 @@ for i in "$@"; do
       ;;
   esac
 done
+
+
+
 
 # Check if the required parameters are set
 
@@ -82,6 +95,12 @@ if [ -z "$NODE_VERSION" ]; then
   echo "Exiting..."
   exit 1
 fi
+
+MAT=$(echo $MATERIAL | tr '[:upper:]' '[:lower:]' ) 
+if [ $MAT == "true" ] || [ $MAT == "yes" ]; then
+  MATERIAL=true
+fi
+
 
 # Output the parameters
 echo "PROJECT FOLDER:      ${PROJECT_FOLDER}"
@@ -135,7 +154,16 @@ echo $NODE_VERSION > .nvmrc
 nvm use
 
 # Install Angular CLI and create th e project
+echo ">===>> Installing Angular CLI and creating the project..."
 npx @angular/cli@$ANGCLI_VERSION new $PROJECT_FOLDER --directory=./ --commit=false --style=scss --routing
+
+
+# Install Angular Material
+if [ $MATERIAL == "true" ]; then
+  echo ">===>> Addng Angular Material..."
+  npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+fi
+# npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
 
 
  
