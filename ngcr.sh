@@ -1,28 +1,41 @@
 #!/bin/bash
 
 # **************************************************************************************************
-# Bash script filename: ngcr.sh - version 0.0.3
+# Bash script filename: ngcr.sh - version 0.0.5
 # ==================================================================================================
 # 240114-31 (c) Copyright Panos Zafiropoulos <www.devxperiences.com>
+# License: MIT
 # --------------------------------------------------------------------------------------------------
 #
+# **************************************************************************************************
 # Description:
+# ============
 # Creates a new Angular project of any Angular version you like. 
 # Note: by default it uses the following parameters: --commit=false --style=scss --routing. However, you can change them (or add new) in the script.
 #
+# *** The sed syntax follows the macOS sed (BSD). For Linux, you might use different syntax, e.g.: you should remove the '' after the -i parameter ***
+#
 # Prerequisites:
+# ==============
 # 1. nvm should have been installed at the ~/.nvm folder.
 # 2. At least a Node.js version should have been set via nvm and this version should be compatible with the Angular version that will be used to create the project.
 #
 # Parameters:
-#   -d | --directory	The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
-#   -a | --angular	  The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
-#   -n | --node		    The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
-#   -m | --material   If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
+# ===========
+#   -d | --directory	    The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
+#   -a | --angular	      The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
+#   -n | --node		        The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
+#   -m | --material       If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
+#   -o | --othermodules   If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
 #
-# Usage example:
+# Usage examples:
+# ==============
+# ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0
 # ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=yes
+# ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs
 #
+# Usage Notes:
+# =================
 # After you download the script, you should make it executable, e.g.:
 # chmod +x ngcr.sh
 # Alternatively, you can also run it as a command:
@@ -35,6 +48,51 @@
 # https://medium.com/@zzpzaf.se/node-js-version-adventures-using-nvm-974f81b4cc08
 #
 # **************************************************************************************************
+#
+# Change log:
+#
+# ================================================================================================
+#
+# Version 0.0.5 (240121) Updates/Changes 
+# --------------------------------------------------------------------------------
+# Capability for adding additonal modules for app.module.ts and material.module.ts are added
+# Other app modules will be installed into the app.module.ts file, if the -o=true parameter is set
+# Material modules will be installed if the -m=true parameter is set
+# 
+# Version 0.0.4 (240118) Updates/Changes
+# --------------------------------------------------------------------------------
+# A new component named "home" added to the app.module.ts (without a test file)
+#
+# Version 0.0.3 (240115) Updates/Changes
+# --------------------------------------------------------------------------------
+# Conditional installation of @angular/material with preselected installation parameters
+#
+# **************************************************************************************************
+
+# Define/add here the modules to be added into the app.module.ts file
+# They will be added if the -o=true parameter is set
+othmods=(
+    "import { HttpClientModule } from '@angular/common/http';" 
+    "import { ReactiveFormsModule } from '@angular/forms';"
+)
+# Define/add here the modules to be added into the material.module.ts file
+# They will be added if the -m=true parameter is set
+materialmods=(
+    "import { MatIconModule } from '@angular/material/icon';"
+    "import { MatCardModule } from '@angular/material/card';"
+    "import { MatFormFieldModule } from '@angular/material/form-field';"
+    "import { MatInputModule } from '@angular/material/input';"
+    "import { MatButtonModule } from '@angular/material/button';"
+)
+
+
+
+# Process the input parameters
+# **************************************************************************************************************
+
+#. <(clear)
+$(clear>&2)
+
 
 
 # Check if there are any arguments
@@ -64,6 +122,10 @@ for i in "$@"; do
       MATERIAL="${i#*=}"             #  <-------------
       shift # past argument=value
       ;;
+    -o=*|--othermodules=*)
+      OTHER="${i#*=}"             #  <-------------
+      shift # past argument=value
+      ;;
     -*|--*)
       echo "Unknown option $i"
       exit 1
@@ -77,6 +139,7 @@ done
 
 
 # Check if the required parameters are set
+# **************************************************************************************************************
 
 if [ -z "$PROJECT_FOLDER" ]; then
   echo "PROJECT FOLDER is empty. Please specify a folder name!"
@@ -97,9 +160,19 @@ if [ -z "$NODE_VERSION" ]; then
 fi
 
 MAT=$(echo $MATERIAL | tr '[:upper:]' '[:lower:]' ) 
+# echo $MAT
 if [ $MAT == "true" ] || [ $MAT == "yes" ]; then
   MATERIAL=true
 fi
+
+# 240121
+OTH=$(echo $OTHER | tr '[:upper:]' '[:lower:]' ) 
+# echo $OTH
+if [ $OTH == "true" ] || [ $OTH == "yes" ]; then
+  OTHER=true
+fi
+
+
 
 
 # Output the parameters
@@ -114,16 +187,20 @@ CWD=${PWD##*/}
 echo "Current working directory: $CWD"
 
 
+# Selecting/creating the project folder
+# **************************************************************************************************************
 
+echo ">===>> Selecting/creating the project folder..."
 # Check if we are already inside the specified folder
 if [ "$CWD" != "$PROJECT_FOLDER" ]; then
   #echo "Current working directory is not the same as the -d parameter"
 
   # Check if the specified folder exists 
   if [ -d "$PROJECT_FOLDER" ]; then
-    read -p "Subdirectory $PROJECT_FOLDER exists. Do you wish to proceed with overwriting it? [Y/n] " yn
+    echo -n "Subdirectory $PROJECT_FOLDER exists. Do you wish to proceed with overwriting it? [Y/n] "
+    read -s -n 1 yn
     # read -p answer
-    if [ "$yn" != "${yn#[Yy]}" ] ;then
+    if [[ $yn = "" ]] || [ "$yn" != "${yn#[Yy]}" ];then
       #echo "Overwriting $PROJECT_FOLDER"
       rm -rf $PROJECT_FOLDER
     else
@@ -139,6 +216,10 @@ fi
 
 
 
+# Selecting the Mode,js version via NVM
+# **************************************************************************************************************
+echo
+echo ">===>> Selecting Node.js version via NVM..."
 # source the nvm.sh file
 . ~/.nvm/nvm.sh
 
@@ -153,18 +234,189 @@ fi
 echo $NODE_VERSION > .nvmrc
 nvm use
 
-# Install Angular CLI and create th e project
+# Install Angular CLI and create the project
 echo ">===>> Installing Angular CLI and creating the project..."
 npx @angular/cli@$ANGCLI_VERSION new $PROJECT_FOLDER --directory=./ --commit=false --style=scss --routing
 
 
-# Install Angular Material
+
+
+# **************************************************************************************************************
+# Adding ANGULAR MATERIAL
+# *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO INSTALL ANGULAR MATERIAL ***
+# **************************************************************************************************************
+
+# 240115 Install Angular Material
 if [ $MATERIAL == "true" ]; then
   echo ">===>> Addng Angular Material..."
   npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
-fi
-# npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  
+  # 240118 Create/Use a separate (feature/widget) module file for Material components
+  npx ng g m material --module=app --flat=true 
 
+fi
+
+
+
+
+# **************************************************************************************************************
+# Adding additional components e.g.: add a home component 
+# *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO ADD ADDITIONAL COMPONENTS ***
+# You can also add more components here
+# **************************************************************************************************************
+# 240118 Create a new component named "home", without adding a test file, and  add it to the app.module.ts 
+npx ng g c home --skip-tests=true --module=app 
+
+
+
+
+
+
+
+# **************************************************************************************************************
+# 240120-21 Adding additional modules e.g.: the app.module.ts and material.module.ts
+# Other modules will be installed if the -o=true parameter is set
+# Material modules will be installed if the -m=true parameter is set
+# *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO ADD ADDITIONAL MODULES ***
+# **************************************************************************************************************
+
+# Define important variables for the rest of script - for module(s(s)) to be added
+app_mod_file_path="src/app/app.module.ts"         # Define the file path name (app.module.ts)
+strA="imports:"                                   # Define the section for searching - start
+strB="],"                                         # Define the section for searching - end
+ch1="{"                                           # Define the 1st character (opening curly brace) for extracting the module from impoer statement
+ch2="}"                                           # Define the 1st character (closing curly brace) for extracting the module from impoer statement
+prefix=" "                                        # Define the prefix (space character) for the module name that should be removed
+suffix=" "                                        # Define the suffix (space character) for the module name that should be removed
+strC=","                                          # Define the comma-character that should be added after the last item in the imports: array
+
+mat_mod_file_path="src/app/material.module.ts"    # Define the file path name (material.module.ts)
+f="CommonModule"                                  # Define the initially only one and first item in the imports: array into material.modules.ts
+strB1="]"                                         # Define the end string for initially search imports region into material.modules.ts
+strB2="})"                                        # Define the end string for initially search @NgModule( region into material.modules.ts       
+strA1="exports:"                                  # Define the exports start region to be added into material.modules.ts
+expSect="$strA1 [\n\t]"                           # Define thewhole exports section to be added into material.modules.ts
+
+
+
+
+addOtherAppModules() {
+    # **************************************************************************************************************
+    # 240120 Additional modules for app.module.ts e.g.: HttpClient, ReactiveFormsModule, etc.to the app.module.ts
+    # You can also add more modules here
+
+    echo ">===>> Addng additional modules into app.module.ts ..."
+    # Define the modules to be added
+    # othmods=(
+    #     "import { HttpClientModule } from '@angular/common/http';" 
+    #     "import { ReactiveFormsModule } from '@angular/forms';"
+    # )
+
+    # First, add a comma after the last item in the othmods: array
+    declare -i counter=0
+    while read line
+    do
+        (( counter ++ ))
+        # echo $counter $line
+        if [[ "$line" == $strA* ]]
+            then
+            imp=true
+        fi
+        if [[ "$line" == *$strB ]]
+            then
+            if [ "$imp" = true ] 
+                then
+                lnr=$( expr $counter - 1)
+                break
+            fi
+        fi
+    done < $app_mod_file_path
+    # echo "$strB is found at line number: $lnr"
+    sed -i '' "$lnr s/$/$strC/" "$app_mod_file_path"
+
+
+    #  Iterate through the modules to be added and add them to the othmods: array
+    for othmod in "${othmods[@]}";
+        do
+        #The 2 lines command below is necessary for macOS (BSD) sed.
+        sed -i '' -e "1i\\
+        $othmod" "$app_mod_file_path"
+
+
+        mod=$(echo $othmod | sed -n "s/.*$ch1 \(.*\)$ch2.*/\1/p")   
+        mod=${mod#$prefix}; #Remove prefix
+        mod=${mod%$suffix}; #Remove suffix
+        # echo $mod
+
+        sed -i ''  "/$strA/, /$strB/ s/$strB/\t$mod,\n$strB/" "$app_mod_file_path"
+    done
+    # cat $app_mod_file_path
+}
+
+
+
+
+
+addMaterialModules() {
+    # **************************************************************************************************************
+    # 240121 Additional modules for material.module.ts 
+    # You can also add more modules here
+
+    echo ">===>> Addng additional modules into material.module.ts ..."
+    # materialmods=(
+    #     "import { MatIconModule } from '@angular/material/icon';"
+    #     "import { MatCardModule } from '@angular/material/card';"
+    #     "import { MatFormFieldModule } from '@angular/material/form-field';"
+    #     "import { MatInputModule } from '@angular/material/input';"
+    #     "import { MatButtonModule } from '@angular/material/button';"
+    # )
+
+    # Add a comma to CommonModule
+    sed -i '' "s/$f/$f$strC/" "$mat_mod_file_path"
+
+    # Add a comma to to closing right brace of the materialmods: array
+    sed -i ''  "/$strA/, /$strB2/ s/$strB1/$strB1$strC/" "$mat_mod_file_path"
+
+    # Add the exports array section
+    sed -i ''  "/$strA/, /$strB2/ s/$strB/$strB \n\t$expSect/" "$mat_mod_file_path"
+
+    # Iterate through the Material modules and add them into the material.module.ts file (import and export array sections)
+    for matmod in "${materialmods[@]}";
+        do
+        # echo $matmod
+        #The 2 lines command below is necessary for macOS (BSD) sed.
+        sed -i '' -e "1i\\
+        $matmod" "$mat_mod_file_path"
+
+        mod=$(echo $matmod | sed -n "s/.*$ch1 \(.*\)$ch2.*/\1/p")   
+        mod=${mod#$prefix}; #Remove prefix
+        mod=${mod%$suffix}; #Remove suffix
+        # echo $mod
+
+        # Add the Material modules into the imports: array section
+        sed -i ''  "/$strA/, /$strB/ s/$strB/\t$mod,\n$strB/" "$mat_mod_file_path"
+
+        # Add the Material modules into the exports: array section
+        sed -i ''  "/$strA1/, /$strB1/ s/$strB1/\t$mod,\n$strB1/" "$mat_mod_file_path"
+    done
+    # cat $mat_mod_file_path
+}
+
+
+# Call
+if [ $OTHER == "true" ]; then
+  addOtherAppModules
+fi
+
+# Call
+if [ $MATERIAL == "true" ]; then
+  addMaterialModules
+fi
+
+
+
+
+echo ">===>> Done! The new project has been created in the folder: $CPATH/$PROJECT_FOLDER/ "
 
  
 
