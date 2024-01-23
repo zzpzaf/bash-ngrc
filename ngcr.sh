@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # **************************************************************************************************
-# Bash script filename: ngcr.sh - version 0.0.5
+# Bash script filename: ngcr.sh - version 0.0.6
 # ==================================================================================================
 # 240114-31 (c) Copyright Panos Zafiropoulos <www.devxperiences.com>
 # License: MIT
@@ -26,6 +26,7 @@
 #   -a | --angular	      The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
 #   -n | --node		        The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
 #   -m | --material       If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
+#   -t | --theme          If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
 #   -o | --othermodules   If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
 #
 # Usage examples:
@@ -33,6 +34,7 @@
 # ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0
 # ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=yes
 # ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs
+# ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2
 #
 # Usage Notes:
 # =================
@@ -52,6 +54,12 @@
 # Change log:
 #
 # ================================================================================================
+#
+# Version 0.0.6 (240123) Updates/Changes 
+# --------------------------------------------------------------------------------
+# Capability for selecting one of the 3 default themes for Angular Material is added
+# This is done via the new -t parameter. e.g.: -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
+# MatToolbarModule has been added to Material Components  
 #
 # Version 0.0.5 (240121) Updates/Changes 
 # --------------------------------------------------------------------------------
@@ -78,13 +86,19 @@ othmods=(
 # Define/add here the modules to be added into the material.module.ts file
 # They will be added if the -m=true parameter is set
 materialmods=(
+    "import { MatToolbarModule } from '@angular/material/toolbar';"
     "import { MatIconModule } from '@angular/material/icon';"
     "import { MatCardModule } from '@angular/material/card';"
     "import { MatFormFieldModule } from '@angular/material/form-field';"
     "import { MatInputModule } from '@angular/material/input';"
     "import { MatButtonModule } from '@angular/material/button';"
 )
-
+# Define/add here the names of  additional components to be created
+# They will be added in the app.module.ts file
+additionalcomponents=(
+    "home"
+    "form1"
+)
 
 
 # Process the input parameters
@@ -119,11 +133,15 @@ for i in "$@"; do
       shift # past argument=value
       ;;
     -m=*|--material=*)
-      MATERIAL="${i#*=}"             #  <-------------
+      MATERIAL="${i#*=}"           
+      shift # past argument=value
+      ;;
+    -t=*|--theme=*)
+      THEME="${i#*=}"             
       shift # past argument=value
       ;;
     -o=*|--othermodules=*)
-      OTHER="${i#*=}"             #  <-------------
+      OTHER="${i#*=}"             
       shift # past argument=value
       ;;
     -*|--*)
@@ -171,6 +189,21 @@ OTH=$(echo $OTHER | tr '[:upper:]' '[:lower:]' )
 if [ $OTH == "true" ] || [ $OTH == "yes" ]; then
   OTHER=true
 fi
+
+if [[ $THEME =~ ^[1-3]$ ]]; then
+  THEME=$THEME
+  if [ $THEME == "1" ]; then
+    THEME="indigo-pink"
+  elif [ $THEME == "2" ]; then
+    THEME="deeppurple-amber"
+  else
+    THEME="pink-bluegrey"
+  fi
+else
+  THEME="indigo-pink"
+fi
+# echo $THEME
+# exit 1
 
 
 
@@ -249,24 +282,14 @@ npx @angular/cli@$ANGCLI_VERSION new $PROJECT_FOLDER --directory=./ --commit=fal
 # 240115 Install Angular Material
 if [ $MATERIAL == "true" ]; then
   echo ">===>> Addng Angular Material..."
-  npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  #npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  # 240123 Add the selected theme
+  npx ng add @angular/material --theme=$THEME --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  
   
   # 240118 Create/Use a separate (feature/widget) module file for Material components
   npx ng g m material --module=app --flat=true 
-
 fi
-
-
-
-
-# **************************************************************************************************************
-# Adding additional components e.g.: add a home component 
-# *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO ADD ADDITIONAL COMPONENTS ***
-# You can also add more components here
-# **************************************************************************************************************
-# 240118 Create a new component named "home", without adding a test file, and  add it to the app.module.ts 
-npx ng g c home --skip-tests=true --module=app 
-
 
 
 
@@ -281,7 +304,8 @@ npx ng g c home --skip-tests=true --module=app
 # **************************************************************************************************************
 
 # Define important variables for the rest of script - for module(s(s)) to be added
-app_mod_file_path="src/app/app.module.ts"         # Define the file path name (app.module.ts)
+srcpath="src/app"                                 # Define the source path
+app_mod_file_path="$srcpath/app.module.ts"        # Define the file path name (app.module.ts)
 strA="imports:"                                   # Define the section for searching - start
 strB="],"                                         # Define the section for searching - end
 ch1="{"                                           # Define the 1st character (opening curly brace) for extracting the module from impoer statement
@@ -290,7 +314,7 @@ prefix=" "                                        # Define the prefix (space cha
 suffix=" "                                        # Define the suffix (space character) for the module name that should be removed
 strC=","                                          # Define the comma-character that should be added after the last item in the imports: array
 
-mat_mod_file_path="src/app/material.module.ts"    # Define the file path name (material.module.ts)
+mat_mod_file_path="$srcpath/material.module.ts"    # Define the file path name (material.module.ts)
 f="CommonModule"                                  # Define the initially only one and first item in the imports: array into material.modules.ts
 strB1="]"                                         # Define the end string for initially search imports region into material.modules.ts
 strB2="})"                                        # Define the end string for initially search @NgModule( region into material.modules.ts       
@@ -414,9 +438,19 @@ if [ $MATERIAL == "true" ]; then
 fi
 
 
+# **************************************************************************************************************
+# Adding additional components e.g.: add a home component 
+# *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO ADD ADDITIONAL COMPONENTS ***
+# You can also add more components here
+# **************************************************************************************************************
+# 240122 Create new components from the additionalcomponents: array, and  add them to the app.module.ts 
+# npx ng g c home --skip-tests=true --module=app 
+echo ">===>> Creating additional components..."
+    for comp in "${additionalcomponents[@]}";
+        do
+        echo $comp
+        npx ng g c $comp --skip-tests=true --module=app
+done
 
 
-echo ">===>> Done! The new project has been created in the folder: $CPATH/$PROJECT_FOLDER/ "
-
- 
 

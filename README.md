@@ -9,7 +9,7 @@ Bash script
 
 # ngcr.sh 
 
-# Version 0.0.5
+# Version 0.0.6
 
 ==================================================================================================
 
@@ -43,6 +43,10 @@ Note: by default it uses the following parameters: --commit=false --style=scss -
    -m | --material  
    If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
 
+   -t | --theme   
+   If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
+#
+
    -o | --othermodules   
    If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
 
@@ -73,6 +77,14 @@ Alternatively, you can also run it as a command:
 - Additionally, you can remove the .sh extension or use a name alias
 
 ## Change log:
+
+Version 0.0.6 (240123) Updates/Changes 
+
+Capability for selecting one of the 3 default themes for Angular Material has been added
+This is done via the new -t parameter. e.g.: -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
+MatToolbarModule has been added to Material Components  
+
+---
 
  Version 0.0.5 (240121) Updates/Changes 
 
