@@ -455,6 +455,7 @@ furtherCustomizations() {
 # **************************************************************************************************************
 # 240122-23 Personal customizations
 # **************************************************************************************************************
+echo
 echo ">===>> Further customizations..."
 
 
@@ -470,7 +471,7 @@ echo ">===>> Creating additional components..."
 done
 
 
-srcpath=$PROJECT_FOLDER/src/app
+echo ">===>> Updating Component files ..." 
 
 # **************************************************************************************************************
 # Initial customization for app.component.html
@@ -482,7 +483,7 @@ echo "<app-form1></app-form1>" >> $srcpath/app.component.html
 # Initial customization for home.component.html
 # **************************************************************************************************************
 
-headerTitle="@angular-material DateTime picker Demo"
+headerTitle="Demo Form"
 copyWrite="(C) 2024 Panos Zafeiropoulos"
 
 line1="appHeaderTitle: string = \"$headerTitle\""
@@ -688,6 +689,9 @@ fi
 
 
 # Cal
-if [ $BASICFORM == "true" ] && [ $MATERIAL == "true"] ; then
+if [ $BASICFORM == "true" ] && [ $MATERIAL == "true" ] ; then
   furtherCustomizations
 fi
+
+
+echo ">===>> Done! The new project has been created in the folder: $CPATH/$PROJECT_FOLDER/ "
