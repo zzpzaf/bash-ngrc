@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # **************************************************************************************************
-# Bash script filename: ngcr.sh - version 0.0.6
+# Bash script filename: ngcr.sh - version 0.0.7
 # ==================================================================================================
 # 240114-31 (c) Copyright Panos Zafiropoulos <www.devxperiences.com>
 # License: MIT
@@ -22,12 +22,15 @@
 #
 # Parameters:
 # ===========
-#   -d | --directory	    The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
-#   -a | --angular	      The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
-#   -n | --node		        The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
-#   -m | --material       If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
-#   -t | --theme          If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
-#   -o | --othermodules   If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
+#   -d  | --directory	      The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
+#   -a  | --angular	        The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
+#   -n  | --node		        The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
+#   -m  | --material        If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
+#   -t  | --theme           If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
+#   -o  | --othermodules    If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
+#   -bf | --basicform       If a basic form is going to be used within the form1 component, or not. e.g.:-bf=true or -bf=yEs. The default value is false. The @angular/material library should be installed with additional material modules, as well as the 'form1' component.
+#
+#
 #
 # Usage examples:
 # ==============
@@ -35,6 +38,7 @@
 # ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=yes
 # ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs
 # ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2
+# ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2 -bf=yes
 #
 # Usage Notes:
 # =================
@@ -95,6 +99,7 @@ materialmods=(
 )
 # Define/add here the names of  additional components to be created
 # They will be added in the app.module.ts file
+# The form1 component should be present in the additionalcomponents: array, if the -bf=true parameter is set
 additionalcomponents=(
     "home"
     "form1"
@@ -144,6 +149,10 @@ for i in "$@"; do
       OTHER="${i#*=}"             
       shift # past argument=value
       ;;
+    -bf=*|--basicform=*)
+      BASICFORM="${i#*=}"             
+      shift # past argument=value
+      ;;
     -*|--*)
       echo "Unknown option $i"
       exit 1
@@ -190,6 +199,7 @@ if [ $OTH == "true" ] || [ $OTH == "yes" ]; then
   OTHER=true
 fi
 
+# 240123
 if [[ $THEME =~ ^[1-3]$ ]]; then
   THEME=$THEME
   if [ $THEME == "1" ]; then
@@ -202,8 +212,17 @@ if [[ $THEME =~ ^[1-3]$ ]]; then
 else
   THEME="indigo-pink"
 fi
-# echo $THEME
-# exit 1
+
+# 240123
+if [ -z "$BASICFORM" ]; then 
+  BASICFORM=false 
+fi
+BF=$(echo $BASICFORM | tr '[:upper:]' '[:lower:]' ) 
+if [ $BF == "true" ] || [ $BF == "yes" ]; then
+  BASICFORM=true
+fi
+
+
 
 
 
@@ -323,7 +342,7 @@ expSect="$strA1 [\n\t]"                           # Define thewhole exports sect
 
 
 
-
+# Function for adding other modules into the app.module.ts file
 addOtherAppModules() {
     # **************************************************************************************************************
     # 240120 Additional modules for app.module.ts e.g.: HttpClient, ReactiveFormsModule, etc.to the app.module.ts
@@ -380,7 +399,7 @@ addOtherAppModules() {
 
 
 
-
+# Function for adding Material modules into the material.module.ts file
 addMaterialModules() {
     # **************************************************************************************************************
     # 240121 Additional modules for material.module.ts 
@@ -427,6 +446,236 @@ addMaterialModules() {
 }
 
 
+
+
+
+
+# Function for further customizations
+furtherCustomizations() {
+# **************************************************************************************************************
+# 240122-23 Personal customizations
+# **************************************************************************************************************
+echo ">===>> Further customizations..."
+
+
+# **************************************************************************************************************
+# Adding additional components e.g.: add a home component 
+# 240122 Create new components from the additionalcomponents: array, and  add them to the app.module.ts 
+
+echo ">===>> Creating additional components..."
+    for comp in "${additionalcomponents[@]}";
+        do
+        echo $comp
+        npx ng g c $comp --skip-tests=true --module=app
+done
+
+
+srcpath=$PROJECT_FOLDER/src/app
+
+# **************************************************************************************************************
+# Initial customization for app.component.html
+# **************************************************************************************************************
+echo "<app-home> </app-home>" > $srcpath/app.component.html
+echo "<app-form1></app-form1>" >> $srcpath/app.component.html 
+
+# **************************************************************************************************************
+# Initial customization for home.component.html
+# **************************************************************************************************************
+
+headerTitle="@angular-material DateTime picker Demo"
+copyWrite="(C) 2024 Panos Zafeiropoulos"
+
+line1="appHeaderTitle: string = \"$headerTitle\""
+line2="myInfo:string = \" $copyWrite \""
+
+strA="HomeComponent"
+strB="}"
+sed -i ''  "/$strA/, /$strB/ s/$strB/\t$line1\n$strB\n/" "$srcpath/home/home.component.ts"
+
+sed -i ''  "/$strA/, /$strB/ s/$strB/\t$line2\n\n$strB\n/" "$srcpath/home/home.component.ts"
+
+
+
+my_home_template=$(cat << 'EOF'
+
+<mat-toolbar class="toolbar-height" color="primary">
+    
+    <mat-toolbar-row >  
+         
+          <a class="font-size2" mat-button routerLink="/">
+            <mat-icon class="icon">home</mat-icon>
+            {{appHeaderTitle}}
+          </a>
+          <span class="toolbar-item-spacer"></span>
+          <div class="font-size3">{{myInfo}}</div>
+  
+    </mat-toolbar-row>
+
+</mat-toolbar>
+
+EOF
+)
+echo "$my_home_template" > $srcpath/home/home.component.html
+
+
+
+my_home_css=$(cat << 'EOF'
+
+.toolbar-item-spacer {
+    flex: 1 1 auto;
+} 
+
+.toolbar-height {
+    height: 70px !important;
+    min-height: 70px !important;
+} 
+
+.font-size2 {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: 600;
+    font-size: calc(1.2 * 16px);
+}
+
+.font-size3 {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: calc(0.5 * 16px);
+}
+
+EOF
+)
+
+echo "$my_home_css" > $srcpath/home/home.component.scss
+
+
+
+# **************************************************************************************************************
+# Initial customization for form1.component.html
+# **************************************************************************************************************
+
+
+
+my_form1_tscode=$(cat << 'EOF'
+
+import { Component } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+
+@Component({
+  selector: 'app-form1',
+  templateUrl: './form1.component.html',
+  styleUrls: ['./form1.component.scss']
+})
+export class Form1Component {
+
+  fornCardTitle: string = 'My Demo Form';
+  demoFormGroup!: FormGroup;
+
+  input1Label: string = 'Input some text';
+  input1Placeholder: string = 'Type some text here';
+  input1ControlNane: string = 'input1';
+
+  submitButtomText: string = 'Submit';
+
+  constructor( private formBuilder: FormBuilder ) { }
+
+  
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  initializeForm(): void {
+    const fbGroup = this.formBuilder.group({});
+
+    fbGroup.addControl(this.input1ControlNane, new FormControl(""));
+    // Add more controls here
+
+    this.demoFormGroup = fbGroup;
+  }
+
+  onFormSubmit(event: Event): void {
+    console.log('Form Submitted', this.demoFormGroup.value);
+  }
+
+}
+
+EOF
+)
+echo "$my_form1_tscode" > $srcpath/form1/form1.component.ts
+
+
+my_form1_templatee=$(cat << 'EOF'
+
+<mat-card >
+
+    <mat-card-content>
+
+        <mat-toolbar class="mat-card-title" color="primary">
+            {{fornCardTitle}}
+        </mat-toolbar>  
+
+        <form [formGroup]="demoFormGroup" (ngSubmit)="onFormSubmit($event)">
+
+            <mat-form-field class="full-width">
+                <mat-label>{{input1Label}}</mat-label>
+                <input matInput placeholder={{input1Placeholder}} formControlName={{input1ControlNane}} >
+            </mat-form-field>
+
+            <mat-card-footer>
+                <mat-card-actions>
+                    <button mat-raised-button type="submit" color="accent" > {{submitButtomText}} </button>
+                </mat-card-actions>
+            </mat-card-footer>
+
+        </form>
+    
+    </mat-card-content>
+
+</mat-card>
+
+EOF
+)
+echo "$my_form1_templatee" > $srcpath/form1/form1.component.html
+
+
+my_form1_css=$(cat << 'EOF'
+
+mat-card {
+    max-width: 400px;
+    margin: 2em auto;
+    text-align: center;
+  }
+  
+  mat-form-field {
+    display: block;
+  }
+
+  .mat-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mat-card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 18px;
+    padding-left:18px;
+    margin-bottom: 15px;
+    text-align: center;
+    border-radius: .5cap;
+  }
+
+EOF
+)
+echo "$my_form1_css" > $srcpath/form1/form1.component.scss
+
+}
+
+
+
+
+
+
 # Call
 if [ $OTHER == "true" ]; then
   addOtherAppModules
@@ -438,19 +687,7 @@ if [ $MATERIAL == "true" ]; then
 fi
 
 
-# **************************************************************************************************************
-# Adding additional components e.g.: add a home component 
-# *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO ADD ADDITIONAL COMPONENTS ***
-# You can also add more components here
-# **************************************************************************************************************
-# 240122 Create new components from the additionalcomponents: array, and  add them to the app.module.ts 
-# npx ng g c home --skip-tests=true --module=app 
-echo ">===>> Creating additional components..."
-    for comp in "${additionalcomponents[@]}";
-        do
-        echo $comp
-        npx ng g c $comp --skip-tests=true --module=app
-done
-
-
-
+# Cal
+if [ $BASICFORM == "true" ] && [ $MATERIAL == "true"] ; then
+  furtherCustomizations
+fi

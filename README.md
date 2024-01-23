@@ -9,7 +9,7 @@ Bash script
 
 # ngcr.sh 
 
-# Version 0.0.6
+# Version 0.0.7
 
 ==================================================================================================
 
@@ -45,18 +45,26 @@ Note: by default it uses the following parameters: --commit=false --style=scss -
 
    -t | --theme   
    If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
-#
 
    -o | --othermodules   
    If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
 
+   -bf | --basicform       
+   If a basic form is going to be used within the form1 component, or not. e.g.:-bf=true or -bf=yEs. The default value is false. The @angular/material library should be installed with additional material modules, as well as the 'form1' component.
+
+
 
 ## Usage examples:
+
 ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0
 
 ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=yes
 
 ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs
+
+ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2
+
+ngcr.sh -d=demoform -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2 -bf=yes
 
 ## Usage Notes:
 
@@ -77,6 +85,13 @@ Alternatively, you can also run it as a command:
 - Additionally, you can remove the .sh extension or use a name alias
 
 ## Change log:
+
+Version 0.0.7 (240123) Updates/Changes 
+
+An optional parameter -bf has been added for creation of a basic/elemntary form. If it has been used e.g. -bf=true or -bf=yEs then very
+basic form is created with 1 input field and 1 submit button 
+
+---
 
 Version 0.0.6 (240123) Updates/Changes 
 
