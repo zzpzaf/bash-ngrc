@@ -694,4 +694,14 @@ if [ $BASICFORM == "true" ] && [ $MATERIAL == "true" ] ; then
 fi
 
 
+echo "## This project has been created via the 'ngcr.sh' tool." > "README.md" 
+echo "## Get it at: https://github.com/zzpzaf/bash-ngrc" >> "README.md" 
+echo "" >> "README.md"
+echo "(C) 2024 Panos Zafeiropoulos" >> "README.md"
+echo "" >> "README.md"
+echo "License: MIT" >> "README.md" 
+
+git add .
+
+
 echo ">===>> Done! The new project has been created in the folder: $CPATH/$PROJECT_FOLDER/ "
