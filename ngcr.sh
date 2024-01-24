@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # **************************************************************************************************
-# Bash script filename: ngcr.sh - version 0.0.7
+# Bash script filename: ngcr.sh - version 0.0.8
 # ==================================================================================================
 # 240114-31 (c) Copyright Panos Zafiropoulos <www.devxperiences.com>
 # License: MIT
@@ -22,13 +22,29 @@
 #
 # Parameters:
 # ===========
-#   -d  | --directory	      The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
+#   -d  | --directory	      The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder.  
+#                           If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
+#
 #   -a  | --angular	        The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11
+#                           You can select a version number from the history list at: https://www.npmjs.com/package/@angular/cli?activeTab=versions
+#
 #   -n  | --node		        The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
-#   -m  | --material        If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
-#   -t  | --theme           If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
-#   -o  | --othermodules    If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
-#   -bf | --basicform       If a basic form is going to be used within the form1 component, or not. e.g.:-bf=true or -bf=yEs. The default value is false. The @angular/material library should be installed with additional material modules, as well as the 'form1' component.
+#                           You can select a version number from the ones installed via nvm tool. List all of the installed versions via nvm, using the 'nvm list' command  
+#                           See also at: https://nodejs.org/en/download/releases/. 
+#
+#   -m  | --material        If the @angular/material library is going to be installed, or not. The flag takes the version to be installed, e.g. -m=15.2.9, -m=16.2.5, -m=17.1.0, etc. 
+#                           You can select a version number from the history list at: https://www.npmjs.com/package/@angular/material?activeTab=versions. Generally, the selected version should follow 
+#                           the Angular version (at least its major number).  The flag, also can be 'true' or 'yes' and in this case it installs the latest compatible version of the Angular Material. 
+#                           Without using the -m flag, or using it with any unrecognized value, the flag is set to false and the @angular/material will not be installed.
+#
+#   -t  | --theme           If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for 
+#                           deeppurple-amber, -t=3 for pink-bluegrey
+#
+#   -o  | --othermodules    If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. 
+#                           The default value is false.
+3
+#   -bf | --basicform       If a basic form is going to be used within the form1 component, or not. e.g.:-bf=true or -bf=yEs. The default value is false. The @angular/material library should be installed 
+#                           with additional material modules, as well as the 'form1' component.
 #
 #
 #
@@ -39,6 +55,7 @@
 # ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs
 # ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2
 # ngcr.sh -d=angular1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2 -bf=yes
+# ngcr.sh -d=NGxDatetimepicker2 -a=15.2.10 -n=18.10.0 -m=15.2.9 -o=yEs -t=3 -bf=YEs
 #
 # Usage Notes:
 # =================
@@ -58,6 +75,16 @@
 # Change log:
 #
 # ================================================================================================
+#
+# Version 0.0.8 (240124) Updates/Changes 
+# --------------------------------------------------------------------------------
+# Capability for specifying the desired Angular Material version has been added via the -m flag. 
+# Now the version numbers provided as values for flags -a, -n and -m are also validated against the x.y.z pattern, where x,y,z shouls be valid integer decimal digits 
+#
+# Version 0.0.7 (240123) Updates/Changes 
+# --------------------------------------------------------------------------------
+# An optional parameter -bf has been added for creation of a basic/elemntary form. If it has been used e.g. -bf=true or -bf=yEs then very
+# basic form is created with 1 input field and 1 submit button 
 #
 # Version 0.0.6 (240123) Updates/Changes 
 # --------------------------------------------------------------------------------
@@ -110,7 +137,7 @@ additionalcomponents=(
 # **************************************************************************************************************
 
 #. <(clear)
-$(clear>&2)
+#$(clear>&2)
 
 
 
@@ -174,23 +201,38 @@ if [ -z "$PROJECT_FOLDER" ]; then
   exit 1
 fi
 
-if [ -z "$ANGCLI_VERSION" ]; then
-  echo "Angular CLI versuin is empty. Please specify a varsuin, e.g.: 16.2.11"
+#240124
+if [ -z "$ANGCLI_VERSION" ] || [[ ! $ANGCLI_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Angular CLI versuin is empty or invalid: $ANGCLI_VERSION. Please specify a valid version, e.g.: 16.2.11"
   echo "Exiting..."
   exit 1
 fi
 
-if [ -z "$NODE_VERSION" ]; then
-  echo "Node version is empty. Please specify thw Node.js version installed via nvm, e.g.: 18.10.0"
+#240124
+if [ -z "$NODE_VERSION" ] || [[ ! $NODE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Node version is empty or invalud: $NODE_VERSION. Please specify a valid Node.js version installed via nvm, e.g.: 18.10.0"
   echo "Exiting..."
   exit 1
 fi
 
-MAT=$(echo $MATERIAL | tr '[:upper:]' '[:lower:]' ) 
-# echo $MAT
+#240124
+if [ -z "$MATERIAL" ]; then 
+  MATERIAL=0
+  MAT="-"
+else
+  MAT=$(echo $MATERIAL | tr '[:upper:]' '[:lower:]' ) 
+fi
+echo "======> MAT $MAT"
 if [ $MAT == "true" ] || [ $MAT == "yes" ]; then
-  MATERIAL=true
+  # MATERIAL=true
+  MATERIAL=1
+elif [[ $MAT =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  MATERIAL=$MAT
+else 
+  MATERIAL=0  
 fi
+
+
 
 # 240121
 OTH=$(echo $OTHER | tr '[:upper:]' '[:lower:]' ) 
@@ -298,19 +340,23 @@ npx @angular/cli@$ANGCLI_VERSION new $PROJECT_FOLDER --directory=./ --commit=fal
 # *** COMMEND-OUT THE FOLLOWING LINES IF YOU DON'T WANT TO INSTALL ANGULAR MATERIAL ***
 # **************************************************************************************************************
 
-# 240115 Install Angular Material
-if [ $MATERIAL == "true" ]; then
-  echo ">===>> Addng Angular Material..."
+# 240115-240124 Install Angular Material
+if [ $MATERIAL != 0 ]; then
+  echo ">===>> Adding Angular Material..."
   #npx ng add @angular/material --theme=indigo-pink --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
   # 240123 Add the selected theme
-  npx ng add @angular/material --theme=$THEME --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
-  
+  # 240124 Add the material version -if it is specified
+  if [ $MATERIAL == 1 ]; then
+    npx ng add @angular/material --theme=$THEME --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  else
+    npx ng add @angular/material@$MATERIAL --theme=$THEME --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  fi
+  # npx ng add @angular/material --theme=$THEME --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
+  # npx ng add @angular/material@15.2.9 --theme=$THEME --/typography=true --browserAnimations=true --interactive=false --skip-confirmation
   
   # 240118 Create/Use a separate (feature/widget) module file for Material components
   npx ng g m material --module=app --flat=true 
 fi
-
-
 
 
 
@@ -483,7 +529,7 @@ echo "<app-form1></app-form1>" >> $srcpath/app.component.html
 # Initial customization for home.component.html
 # **************************************************************************************************************
 
-headerTitle="Demo Form"
+headerTitle="NGX Datetimepicker Demo Form"
 copyWrite="(C) 2024 Panos Zafeiropoulos"
 
 line1="appHeaderTitle: string = \"$headerTitle\""
@@ -683,7 +729,7 @@ if [ $OTHER == "true" ]; then
 fi
 
 # Call
-if [ $MATERIAL == "true" ]; then
+if [ $MATERIAL != 0 ]; then
   addMaterialModules
 fi
 

@@ -9,7 +9,7 @@ Bash script
 
 # ngcr.sh 
 
-# Version 0.0.7
+# Version 0.0.8
 
 ==================================================================================================
 
@@ -29,28 +29,29 @@ Note: by default it uses the following parameters: --commit=false --style=scss -
 1. nvm should have been installed at the ~/.nvm folder.
 2. At least a Node.js version should have been set via nvm and this version should be compatible with the Angular version that will be used to create the project.
 
-## Parameters:
+## Flags / Parameters:
 
-   -d | --directory	
-   The project folder and project name. It should not be empty. If the name of the current folder has the same name, then the script creates the project in the current folder. If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
-   
-   -a | --angular
-   The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. -a=16.2.11
-   
-   -n | --node
-   The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0
+-d  | --directory	      
+The project folder and project name. It should not be empty. If the name of the current folder has the same name,    then the script creates the project in the current folder.  If a direct sub-folder with the same name exists, then asks for overwriting for proceeding. e.g.: -d=myproject1
 
-   -m | --material  
-   If the @angular/material library is going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the #angular/material to be added in the project e.g.:-m=true. The default value is false.  
+-a  | --angular	        
+The Angular CLI version that will be used to create the project. It should not be empty. It should be an existing and valid Angular CLI version. e.g.: -a=16.2.11 You can select a version number from the history list at: https://www.npmjs.com/package/@angular/cli?activeTab=versions
 
-   -t | --theme   
-   If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
+-n  | --node
+The Node.js version. This should be one of the versions already installed via nvm, and it should be also, compatible with the Angular version selected. e.g.: -n=18.10.0. You can select a version number from the ones installed via nvm tool. List all of the installed versions via nvm, using the 'nvm list' command. See also at: https://nodejs.org/en/download/releases/. 
 
-   -o | --othermodules   
-   If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
+-m  | --material        
+If the @angular/material library is going to be installed, or not. The flag takes the version to be installed, e.g. -m=15.2.9, -m=16.2.5, -m=17.1.0, etc. You can select a version number from the history list at: https://www.npmjs.com/package/@angular/material?activeTab=versions. Generally, the selected version should follow the Angular version (at least its major number).  The flag, also can be 'true' or 'yes' and in this case it installs the latest compatible version of the Angular Material. Without using the -m flag, or using it with any unrecognized value, the flag is set to false and the @angular/material will not be installed.
 
-   -bf | --basicform       
-   If a basic form is going to be used within the form1 component, or not. e.g.:-bf=true or -bf=yEs. The default value is false. The @angular/material library should be installed with additional material modules, as well as the 'form1' component.
+-t  | --theme 
+If the @angular/material library is going to be installed, then you can select one of the 3 default themes for Angular Material. -t=1 for indigo-pink (default), -t=2 for deeppurple-amber, -t=3 for pink-bluegrey
+
+-o  | --othermodules    
+If other modules are going to be installed, or not. It recognizes 'true' or 'yes' as values that cause the other modules to be added in the project e.g.:-o=true. The default value is false.
+
+-bf | --basicform       
+If a basic form is going to be used within the form1 component, or not. e.g.:-bf=true or -bf=yEs. The default value is false. The @angular/material library should be installed with additional material modules, as well as the 'form1' component.
+
 
 
 
@@ -66,9 +67,11 @@ ngcr.sh -d=myproject1 -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2
 
 ngcr.sh -d=demoform -a=16.2.11 -n=18.10.0 -m=trUE -o=yEs -t=2 -bf=yes
 
+ngcr.sh -d=NGxDatetimepicker2 -a=15.2.10 -n=18.10.0 -m=15.2.9 -o=yEs -t=3 -bf=YEs
+
 ## Usage Notes:
 
-For related information check Authors posts at:
+For information related to installing an Angular version and NVM, check Author's posts at:
 
 https://medium.com/@zzpzaf.se/angular-create-a-project-with-any-angular-version-you-like-c9108419835c
 
@@ -85,6 +88,12 @@ Alternatively, you can also run it as a command:
 - Additionally, you can remove the .sh extension or use a name alias
 
 ## Change log:
+
+Version 0.0.8 (240124) Updates/Changes 
+
+Capability for specifying the desired Angular Material version has been added via the -m flag. Now the version numbers provided as values for flags -a, -n and -m are also validated against the x.y.z pattern, where x,y,z shouls be valid integer decimal digits 
+
+---
 
 Version 0.0.7 (240123) Updates/Changes 
 
